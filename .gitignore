@@ -2,9 +2,6 @@
 node_modules
 **/node_modules
 
-# ignore workflow
-apps
-
 # output
 out
 dist
@@ -13,8 +10,6 @@ build
 
 # dotenv environment variable files
 .env
-.env.*
-!.env.example
 
 # caches
 .cache

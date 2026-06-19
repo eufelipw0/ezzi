@@ -1,0 +1,18 @@
+{
+  "name": "lithium-test-bot",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "start": "bun --watch --watch-dir=../../ src/index.ts",
+    "dev": "bun src/index.ts"
+  },
+  "dependencies": {
+    "@lithium": "workspace:*",
+    "discord.js": "^14.14.1",
+    "zod": "4.1.11",
+    "chalk": "5.6.2" 
+  },
+  "devDependencies": {
+    "@lithium/config": "workspace:*"
+  }
+}
