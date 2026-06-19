@@ -1,0 +1,17 @@
+{
+  "files.autoSave": "afterDelay",
+  "material-icon-theme.folders.associations": {
+    "@config": "config",
+    "@template": "template",
+    "changelog": "update"
+  },
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": "explicit",
+    "source.sortImports": "explicit",
+    "source.removeUnusedImports": "explicit",
+    "source.addMissingImports.ts": "explicit"
+  },
+  "npmx.diagnostics.vulnerability": false,
+  "npmx.diagnostics.replacement": false,
+  "npmx.diagnostics.distTag": false
+}
