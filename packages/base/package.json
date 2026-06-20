@@ -1,6 +1,6 @@
 {
   "name": "@ezzi/core",
-  "version": "1.0.0",
+  "version": "1.2.2",
   "description": "Library with structures and functions for creating modern Discord applications.",
   "license": "MIT",
   "type": "module",
@@ -36,10 +36,6 @@
     ".": {
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
-    },
-    "./tools": {
-      "import": "./dist/tools/index.js",
-      "types": "./dist/tools/index.d.ts"
     },
     "./tsconfig": "./tsconfig/base.json"
   },
