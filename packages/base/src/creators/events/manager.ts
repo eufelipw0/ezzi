@@ -60,14 +60,14 @@ export class EventManager extends BaseManager {
     }
     public register(client: Client) {
         const collection = this.collection.filter(
-            (_, key) => key !== "clientReady"
+            (_, key) => key !== "clientReady" && key !== "messageCreate"
         );
 
         for (const [key, events] of collection.entries()) {
             client.on(key, (...args: ClientEvents[keyof ClientEvents]) => {
                 Promise.all(Array.from(events.values()).map(event =>
                     this.onEvent(event, args)
-                ))
+                ));
             });
         }
     }

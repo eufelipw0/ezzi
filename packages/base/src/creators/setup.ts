@@ -1,103 +1,139 @@
 import {
-  ApplicationCommandType,
-  InteractionContextType,
-  type CacheType,
-  type ClientEvents,
-  type PermissionResolvable,
+    ApplicationCommandOptionType,
+    ApplicationCommandType,
+    type CacheType,
+    type ClientEvents,
+    type PermissionResolvable,
 } from "discord.js";
 import {
-  LithiumApp,
-  type BaseCommandsConfig,
-  type BaseEventsConfig,
-  type BaseRespondersConfig,
+    type BaseCommandsConfig,
+    type BaseEventsConfig,
+    type BaseRespondersConfig,
+    LithiumApp,
 } from "../app.js";
 import {
-  Command,
-  type CommandData,
-  type CommandType,
+    type AppCommandData,
+    type CommandType,
+    type SubCommandGroupModuleData,
+    type SubCommandModuleData,
 } from "./commands/command.js";
+import { Responder, type ResponderData, type ResponderType } from "./responders/responder.js";
 import { Event, type EventData } from "./events/event.js";
-import {
-  Responder,
-  type ResponderData,
-  type ResponderType,
-} from "./responders/responder.js";
 
 export interface SetupCreatorsOptions {
-  commands?: BaseCommandsConfig & {
-    defaultMemberPermissions?: PermissionResolvable[];
-  };
-  responders?: Partial<BaseRespondersConfig>;
-  events?: Partial<BaseEventsConfig>;
+    commands?: Partial<BaseCommandsConfig> & {
+        defaultMemberPermissions?: PermissionResolvable[];
+        defaultBotPermissions?: PermissionResolvable[];
+    };
+    responders?: Partial<BaseRespondersConfig>;
+    events?: Partial<BaseEventsConfig>;
 }
+
 /**
  * Initializes the Lithium command/event/responder creation system.
  *
  * This function configures the Lithium application’s internal registries
  * for commands, events, and responders, and returns a set of factory
  * functions used to create each type of component.
- *
- * It also:
- * - Applies optional default command permissions
- * - Merges user-provided config into the LithiumApp instance
- * - Automatically injects `process.env.GUILD_ID` into guild-restricted commands
- * - Ensures `"clientReady"` events always run once
- *
- * **Returned creators:**
- * - `createCommand(data)` — Registers a new slash command (or other command type)
- * - `createEvent(data)` — Registers a Discord.js event listener
- * - `createResponder(data)` — Registers an interaction responder (buttons, modals, etc.)
- *
- * @example
- * import { setupCreators } from "@lithium";
- *
- * export const { createCommand, createResponder, createEvent } = setupCreators();
  */
 export function setupCreators(options: SetupCreatorsOptions = {}) {
-  const app = LithiumApp.getInstance();
-  app.config.commands = { ...(options.commands ??= {}) };
-  app.config.commands.guilds ??= [];
-  app.config.responders = { ...(options.responders ??= {}) };
-  app.config.events = { ...(options.events ??= {}) };
+    const app = LithiumApp.getInstance();
 
-  if (process.env.GUILD_ID?.length) {
-    app.config.commands.guilds.push(process.env.GUILD_ID);
-  }
-  return {
-    createCommand: function <
-      T extends CommandType = ApplicationCommandType.ChatInput,
-      const C extends readonly InteractionContextType[] = [
-        InteractionContextType.Guild,
-      ],
-      R = void,
-    >(data: CommandData<T, C, R>): Command<T, C, R> {
-      if (options.commands?.defaultMemberPermissions) {
-        data.defaultMemberPermissions ??=
-          options.commands.defaultMemberPermissions;
-      }
-      const command = new Command(data);
-      app.commands.set(command);
-      return command;
-    },
-    createEvent: function <EventName extends keyof ClientEvents>(
-      data: EventData<EventName>,
-    ) {
-      if (data.event === "clientReady") {
-        data.once = true;
-      }
-      const event = new Event(data);
-      app.events.add(event);
-      return event;
-    },
-    createResponder: function <
-      Path extends string,
-      const Types extends readonly ResponderType[],
-      Parsed,
-      Cache extends CacheType = CacheType,
-    >(data: ResponderData<Path, Types, Parsed, Cache>) {
-      const responder = new Responder(data);
-      app.responders.set(responder);
-      return responder;
-    },
-  };
+    app.config.commands = { ...(options.commands ?? {}) };
+    app.config.commands.guilds ??= [];
+    app.config.responders = { ...(options.responders ?? {}) };
+    app.config.events = { ...(options.events ?? {}) };
+
+    if (process.env.GUILD_ID?.length) {
+        app.config.commands.guilds.push(process.env.GUILD_ID);
+    }
+
+    const defaultMemberPerms = options.commands?.defaultMemberPermissions;
+    const defaultBotPerms = options.commands?.defaultBotPermissions;
+
+    return {
+        createCommand<
+            T extends CommandType = ApplicationCommandType.ChatInput,
+            P extends boolean = false,
+            R = void,
+        >(data: AppCommandData<T, P, R>): any {
+            const currentApp = LithiumApp.getInstance();
+
+            if (defaultMemberPerms) {
+                (data as any).defaultMemberPermissions ??= defaultMemberPerms;
+            }
+
+            if (defaultBotPerms && !(data as any).botPermissions?.length) {
+                (data as any).botPermissions = defaultBotPerms;
+            }
+
+            const resolved = currentApp.commands.set(data as any);
+            
+            if (typeof (currentApp.commands as any).addLog === "function") {
+                (currentApp.commands as any).addLog(resolved);
+            }
+
+            if (resolved.type !== ApplicationCommandType.ChatInput) {
+                return resolved;
+            }
+
+            const commandName = resolved.name;
+
+            const createSubcommand = <SubResult>(group?: string) =>
+                (subData: SubCommandModuleData<P, SubResult>): void => {
+                    const subApp = LithiumApp.getInstance();
+                    if (defaultBotPerms && !subData.botPermissions?.length) {
+                        subData = { ...subData, botPermissions: defaultBotPerms };
+                    }
+                    subApp.commands.addModule(commandName, {
+                        ...subData,
+                        group,
+                        type: ApplicationCommandOptionType.Subcommand,
+                    });
+                };
+
+            return Object.assign(data as any, {
+                ...resolved,
+
+                group<W = R>(groupData: SubCommandGroupModuleData<P, R, W>) {
+                    const groupApp = LithiumApp.getInstance();
+                    if (defaultBotPerms && !groupData.botPermissions?.length) {
+                        groupData = { ...groupData, botPermissions: defaultBotPerms };
+                    }
+                    groupApp.commands.addModule(commandName, {
+                        ...groupData,
+                        type: ApplicationCommandOptionType.SubcommandGroup,
+                    });
+                    return { subcommand: createSubcommand<W>(groupData.name) };
+                },
+
+                subcommand: createSubcommand<R>(),
+            });
+        },
+
+        createEvent<EventName extends keyof ClientEvents>(data: EventData<EventName>) {
+            const currentApp = LithiumApp.getInstance();
+
+            const resolved = new Event({
+                ...data,
+                once: (data.event === "ready" || data.event === "clientReady") ? true : data.once,
+            });
+
+            return currentApp.events.add(resolved as any);
+        },
+        createResponder<
+            Path extends string,
+            const Types extends readonly ResponderType[],
+            Schema,
+            Cache extends CacheType = CacheType,
+        >(data: ResponderData<Path, Types, Schema, Cache>) {
+            const currentApp = LithiumApp.getInstance();
+
+            const responderInstance = new Responder(data as any);
+
+            currentApp.responders.set(responderInstance as any);
+
+            return responderInstance;
+        }
+    };
 }

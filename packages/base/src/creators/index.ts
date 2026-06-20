@@ -9,7 +9,7 @@ export { emitResponder } from "./responders/emit.js";
 
 export {
     type Command,
-    type CommandData
+    type AppCommandData
 } from "./commands/command.js";
 
 export {

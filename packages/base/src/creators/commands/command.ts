@@ -1,26 +1,95 @@
-import { ApplicationCommandOptionType, ApplicationCommandType, AutocompleteInteraction, ChatInputCommandInteraction, InteractionContextType, MessageContextMenuCommandInteraction, UserContextMenuCommandInteraction, type ApplicationCommandOptionAllowedChannelTypes, type ApplicationCommandOptionChoiceData, type BaseApplicationCommandData, type CacheType, type LocalizationMap } from "discord.js";
+import {
+    type APIInteractionDataResolvedGuildMember,
+    type APIRole,
+    type ApplicationCommandOptionAllowedChannelTypes,
+    type ApplicationCommandOptionChoiceData,
+    ApplicationCommandOptionType,
+    ApplicationCommandType,
+    Attachment,
+    AutocompleteInteraction,
+    type BaseApplicationCommandData,
+    type CacheType,
+    type Channel,
+    ChatInputCommandInteraction,
+    GuildMember,
+    InteractionContextType,
+    type LocalizationMap,
+    MessageContextMenuCommandInteraction,
+    type PermissionResolvable,
+    Role,
+    User,
+    UserContextMenuCommandInteraction,
+} from "discord.js";
 import type { NotEmptyArray, UniqueArray } from "../../utils/types.js";
+import { CommandContext } from "./context.js";
 
-export type CommandType = 
-    | ApplicationCommandType.ChatInput
-    | ApplicationCommandType.Message
-    | ApplicationCommandType.User;
+export const IgnoreCommand = {
+    Slash: "slash",
+    Message: "message",
+} as const;
 
-type AutocompleData<Type> = Promise<
-    | readonly ApplicationCommandOptionChoiceData<
-        Type extends (number | string) ? Type : (number | string)
-    >[]
+export type IgnoreCommandType = (typeof IgnoreCommand)[keyof typeof IgnoreCommand];
+
+export type CommandType = Exclude<
+    ApplicationCommandType,
+    ApplicationCommandType.PrimaryEntryPoint
+>;
+
+export type CommandContextOptions = {
+    getString(name: string, required?: boolean): string | null;
+    getNumber(name: string, required?: boolean): number | null;
+    getInteger(name: string, required?: boolean): number | null;
+    getBoolean(name: string, required?: boolean): boolean | null;
+    getUser(name: string, required?: boolean): User | null;
+    getMember(name: string): GuildMember | APIInteractionDataResolvedGuildMember | null;
+    getRole(name: string, required?: boolean): Role | APIRole | null;
+    getChannel(name: string, required?: boolean): ReturnType<ChatInputCommandInteraction["options"]["getChannel"]> | Channel | null;
+    getMentionable(name: string, required?: boolean): User | GuildMember | Role | APIInteractionDataResolvedGuildMember | APIRole | null;
+    getAttachment(name: string, required?: boolean): Attachment | null;
+    getSubcommand(required?: true): string | null;
+    getSubcommandGroup(required?: true): string | null;
+};
+
+export type CommandCategoryType = string;
+
+export type OptionValueType =
+    | "text"
+    | "number"
+    | "integer"
+    | "user"
+    | "role"
+    | "mentionable"
+    | "channel"
+    | "attachment"
+    | "boolean";
+
+export interface OptionNeed {
+    name: string;
+    description: string;
+    value: OptionValueType;
+}
+
+type AutocompleteData<T> = Promise<
+    | readonly ApplicationCommandOptionChoiceData<T extends number | string ? T : number | string>[]
     | undefined
     | void
 >;
 
-export type AutocompleteRun<Type, Contexts> = (
-    this: void,
-    interaction: AutocompleteInteraction<CacheMode<Contexts>>
-) => AutocompleData<Type>;
+export type CacheMode<Contexts> = Contexts extends readonly InteractionContextType[]
+    ? {
+        [InteractionContextType.Guild]: "cached";
+        [InteractionContextType.BotDM]: CacheType;
+        [InteractionContextType.PrivateChannel]: CacheType;
+    }[Contexts[number]]
+    : CacheType;
 
-interface AutocompleteOptionData<Type, Contexts> {
-    autocomplete?: true | AutocompleteRun<Type, Contexts>;
+export type AutocompleteRun<T, Contexts> = (
+    this: void,
+    interaction: AutocompleteInteraction<CacheMode<Contexts>>,
+) => AutocompleteData<T>;
+
+interface AutocompleteOptionData<T, Contexts> {
+    autocomplete?: true | AutocompleteRun<T, Contexts>;
 }
 
 interface BaseOptionData {
@@ -31,35 +100,32 @@ interface BaseOptionData {
     required?: boolean;
 }
 
-interface StringOptionData<Contexts> extends
-    BaseOptionData, AutocompleteOptionData<string, Contexts> {
-    type: ApplicationCommandOptionType.String,
+interface StringOptionData<Contexts> extends BaseOptionData, AutocompleteOptionData<string, Contexts> {
+    type: ApplicationCommandOptionType.String;
     choices?: readonly ApplicationCommandOptionChoiceData<string>[];
     minLength?: number;
     maxLength?: number;
 }
 
-interface NumberOptionData<Contexts> extends
-    BaseOptionData, AutocompleteOptionData<number, Contexts> {
-    type:
-    | ApplicationCommandOptionType.Number
-    | ApplicationCommandOptionType.Integer;
+interface NumberOptionData<Contexts> extends BaseOptionData, AutocompleteOptionData<number, Contexts> {
+    type: ApplicationCommandOptionType.Number | ApplicationCommandOptionType.Integer;
     choices?: readonly ApplicationCommandOptionChoiceData<number>[];
     minValue?: number;
     maxValue?: number;
 }
 
 interface ChannelOptionData extends BaseOptionData {
-    type: ApplicationCommandOptionType.Channel
-    channelTypes?: readonly ApplicationCommandOptionAllowedChannelTypes[]
+    type: ApplicationCommandOptionType.Channel;
+    channelTypes?: readonly ApplicationCommandOptionAllowedChannelTypes[];
 }
+
 interface CommonOptionData extends BaseOptionData {
     type:
-    | ApplicationCommandOptionType.Attachment
-    | ApplicationCommandOptionType.Boolean
-    | ApplicationCommandOptionType.Mentionable
-    | ApplicationCommandOptionType.Role
-    | ApplicationCommandOptionType.User
+        | ApplicationCommandOptionType.Attachment
+        | ApplicationCommandOptionType.Boolean
+        | ApplicationCommandOptionType.Mentionable
+        | ApplicationCommandOptionType.Role
+        | ApplicationCommandOptionType.User;
 }
 
 export type SlashCommandPrimitiveOptionData<Contexts> =
@@ -69,101 +135,108 @@ export type SlashCommandPrimitiveOptionData<Contexts> =
     | ChannelOptionData;
 
 export interface SubCommandOptionData<Contexts> extends Omit<BaseOptionData, "required"> {
-    type: ApplicationCommandOptionType.Subcommand,
-    options?: SlashCommandPrimitiveOptionData<Contexts>[]
+    type: ApplicationCommandOptionType.Subcommand;
+    defaultMemberPermissions?: PermissionResolvable;
+    botPermissions?: PermissionResolvable[];
+    options?: SlashCommandPrimitiveOptionData<Contexts>[];
 }
 
 export interface GroupOptionData<Contexts> extends Omit<BaseOptionData, "required"> {
-    type: ApplicationCommandOptionType.SubcommandGroup,
-    options: SubCommandOptionData<Contexts>[]
-}
-
-type CacheMode<Contexts> = Contexts extends readonly InteractionContextType[]
-    ? {
-        [InteractionContextType.Guild]: "cached",
-        [InteractionContextType.BotDM]: CacheType,
-        [InteractionContextType.PrivateChannel]: CacheType,
-    }[Contexts[number]]
-    : CacheType;
-
-interface CommandRunThis {
-    /**
-     * Blocks the flow of executions
-     */
-    block(): never;
-}
-
-type ResolveCommandModuleData<Return> = Return extends void ? undefined : Return;
-
-export type SubCommandModuleData<Contexts, Return> =
-    Omit<BaseOptionData, "required"> & {
-        group?: string;
-        run(
-            this: CommandRunThis,
-            interaction: ChatInputCommandInteraction<CacheMode<Contexts>>,
-            data: ResolveCommandModuleData<Return>
-        ): Promise<void>;
-        options?: SlashCommandPrimitiveOptionData<Contexts>[]
-    };
-
-export type SubCommandGroupModuleData<Contexts, Return, T> =
-    Omit<BaseOptionData, "required"> & {
-        options?: Omit<SubCommandOptionData<Contexts>, "type">[]
-        run?(
-            this: CommandRunThis,
-            interaction: ChatInputCommandInteraction<CacheMode<Contexts>>,
-            data: ResolveCommandModuleData<Return>
-        ): Promise<T>;
-    };
-
-type RunInteraction<T, Contexts> =
-    T extends ApplicationCommandType.Message
-    ? MessageContextMenuCommandInteraction<CacheMode<Contexts>> :
-    T extends ApplicationCommandType.User
-    ? UserContextMenuCommandInteraction<CacheMode<Contexts>> :
-    ChatInputCommandInteraction<CacheMode<Contexts>>
-
-type BaseAppCommandData =
-    & Omit<BaseApplicationCommandData, "contexts">
-    & Pick<BaseOptionData, "descriptionLocalizations">
-
-export interface CommandData<T, Contexts, R> extends BaseAppCommandData {
-    name: string;
-    description?: string;
-    contexts?: NotEmptyArray<UniqueArray<Contexts>>
-    type?: T;
-    global?: boolean;
-    run?(this: CommandRunThis, interaction: RunInteraction<T, Contexts>): Promise<R>;
-    autocomplete?: AutocompleteRun<string | number, Contexts>;
-    options?:
-    | SlashCommandPrimitiveOptionData<Contexts>[]
-    | (GroupOptionData<Contexts> | SubCommandOptionData<Contexts>)[];
+    type: ApplicationCommandOptionType.SubcommandGroup;
+    defaultMemberPermissions?: PermissionResolvable;
+    botPermissions?: PermissionResolvable[];
+    options: SubCommandOptionData<Contexts>[];
 }
 
 export type SlashCommandOptionData<Contexts> =
     | SlashCommandPrimitiveOptionData<Contexts>
     | GroupOptionData<Contexts>
-    | SubCommandOptionData<Contexts>
+    | SubCommandOptionData<Contexts>;
+
+export type RunInteraction<T, Contexts> =
+    T extends ApplicationCommandType.Message
+        ? MessageContextMenuCommandInteraction<CacheMode<Contexts>>
+        : T extends ApplicationCommandType.User
+            ? UserContextMenuCommandInteraction<CacheMode<Contexts>>
+            : ChatInputCommandInteraction<CacheMode<Contexts>>;
+
+interface CommandRunThis {
+    /** Blocks the flow of executions */
+    block(): never;
+}
+
+type BaseAppCommandData = Omit<BaseApplicationCommandData, "contexts" | "dmPermission"> &
+    Pick<BaseOptionData, "descriptionLocalizations">;
+
+type ResolveCommandModuleData<R> = R extends void ? undefined : R;
+
+export type SubCommandModuleData<Contexts, R> = Omit<BaseOptionData, "required"> & {
+    group?: string;
+    shortcut?: boolean;
+    aliases?: string[];
+    ignore?: IgnoreCommandType;
+    defaultMemberPermissions?: PermissionResolvable;
+    botPermissions?: PermissionResolvable[];
+    run(
+        this: CommandRunThis,
+        ctx: CommandContext,
+        data: ResolveCommandModuleData<R>,
+    ): Promise<void>;
+    options?: SlashCommandPrimitiveOptionData<Contexts>[];
+};
+
+export type SubCommandGroupModuleData<Contexts, R, T> = Omit<BaseOptionData, "required"> & {
+    aliases?: string[];
+    defaultMemberPermissions?: PermissionResolvable;
+    botPermissions?: PermissionResolvable[];
+    options?: Omit<SubCommandOptionData<Contexts>, "type">[];
+    run?(
+        this: CommandRunThis,
+        ctx: CommandContext,
+        data: ResolveCommandModuleData<R>,
+    ): Promise<T>;
+};
 
 export type CommandModule =
-    | (SubCommandGroupModuleData<unknown, unknown, unknown> & {
-        type: ApplicationCommandOptionType.SubcommandGroup
-    })
-    | (SubCommandModuleData<unknown, unknown> & {
-        type: ApplicationCommandOptionType.Subcommand
-        group?: string
-    });
+    | (SubCommandGroupModuleData<any, any, any> & {
+          type: ApplicationCommandOptionType.SubcommandGroup;
+      })
+    | (SubCommandModuleData<any, any> & {
+          type: ApplicationCommandOptionType.Subcommand;
+          group?: string;
+      });
+
+export interface AppCommandData<T, Contexts, R> extends BaseAppCommandData {
+    name: string;
+    aliases?: string[];
+    category?: CommandCategoryType;
+    description?: string;
+    contexts?: NotEmptyArray<UniqueArray<Contexts>>;
+    dmPermission?: boolean;
+    type?: T;
+    global?: boolean;
+    ignore?: IgnoreCommandType;
+    botPermissions?: PermissionResolvable[];
+    run?(this: CommandRunThis, ctx: CommandContext): Promise<R>;
+    autocomplete?: AutocompleteRun<string | number, Contexts>;
+    options?:
+        | SlashCommandPrimitiveOptionData<Contexts>[]
+        | (GroupOptionData<Contexts> | SubCommandOptionData<Contexts>)[];
+}
+
+export type GenericAppCommandData = AppCommandData<CommandType, readonly InteractionContextType[], unknown>;
 
 class GroupCommandModule<
     Type,
     Contexts extends readonly InteractionContextType[],
     Return,
-    ModuleReturn
+    ModuleReturn,
 > {
     constructor(
         public readonly command: Command<Type, Contexts, Return>,
-        public readonly data: SubCommandGroupModuleData<Contexts, Return, ModuleReturn>
-    ) { }
+        public readonly data: SubCommandGroupModuleData<Contexts, Return, ModuleReturn>,
+    ) {}
+
     public subcommand(data: SubCommandModuleData<Contexts, ModuleReturn>) {
         data.group ??= this.data.name;
         this.command.subcommand(data);
@@ -173,15 +246,17 @@ class GroupCommandModule<
 
 export class Command<
     Type,
-    Contexts extends readonly InteractionContextType[],
-    Return
+    Contexts extends readonly InteractionContextType[] = readonly [typeof InteractionContextType.Guild],
+    Return = unknown,
 > {
-    public readonly modules: CommandModule[] = []
-    constructor(
-        public readonly data: CommandData<Type, Contexts, Return>
-    ) {
-        this.data.type ??= <Type>ApplicationCommandType.ChatInput
-        if (this.data.type === ApplicationCommandType.ChatInput) {
+    public readonly modules: CommandModule[] = [];
+    public readonly data: AppCommandData<Type, Contexts, Return>;
+
+    constructor(data: AppCommandData<Type, Contexts, Return>) {
+        this.data = data;
+        this.data.type ??= ApplicationCommandType.ChatInput as unknown as Type;
+
+        if ((this.data.type as unknown) === ApplicationCommandType.ChatInput) {
             this.data.description ??= this.data.name;
             this.data.name = this.data.name
                 .toLowerCase()
@@ -190,26 +265,26 @@ export class Command<
         if (this.data.name.length > 32) {
             this.data.name = this.data.name.slice(0, 32);
         }
-        if (!this.data.contexts){
+        if (!this.data.contexts) {
             Object.assign(this.data, {
-                contexts: [InteractionContextType.Guild]
+                contexts: [InteractionContextType.Guild],
             });
         }
     }
+
     public group<ModuleReturn = Return>(data: SubCommandGroupModuleData<Contexts, Return, ModuleReturn>) {
         this.modules.push({
             ...data,
-            type: ApplicationCommandOptionType.SubcommandGroup
-        });
-        return new GroupCommandModule<Type, Contexts, Return, ModuleReturn>(
-            this, data
-        );
+            type: ApplicationCommandOptionType.SubcommandGroup,
+        } as CommandModule);
+        return new GroupCommandModule<Type, Contexts, Return, ModuleReturn>(this, data);
     }
+
     public subcommand<R = Return>(data: SubCommandModuleData<Contexts, R>) {
         this.modules.push({
             ...data,
-            type: ApplicationCommandOptionType.Subcommand
-        });
+            type: ApplicationCommandOptionType.Subcommand,
+        } as CommandModule);
         return this;
     }
 }

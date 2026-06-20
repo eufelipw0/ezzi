@@ -1,8 +1,0 @@
-{
-  "extends": "@lithium/config/tsconfig",
-  "compilerOptions": {
-    "rootDir": "./src",
-    "noEmit": true
-  },
-  "include": ["src/**/*"]
-}

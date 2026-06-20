@@ -1,6 +1,6 @@
 {
   "name": "@lithium",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Library with structures and functions for creating modern Discord applications.",
   "license": "MIT",
   "type": "module",
@@ -31,27 +31,15 @@
     "node",
     "bun"
   ],
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/rinckodev/constatic.git",
-    "directory": "packages/base"
-  },
-  "author": {
-    "url": "https://github.com/rinckodev",
-    "name": "Rincko dev"
-  },
-  "devDependencies": {
-    "@lithium/config": "*",
-    "typescript": "^5.8.2",
-    "discord.js": "^14.26.3"
-  },
+  "homepage": "https://constatic-docs.vercel.app",
   "exports": {
     ".": {
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
     },
     "./lib": {
-      
+      "import": "./dist/lib/index.js",
+      "types": "./dist/lib/index.d.ts"
     },
     "./tsconfig": "./tsconfig/base.json"
   },
@@ -59,7 +47,6 @@
     "dist",
     "tsconfig"
   ],
-  "homepage": "https://constatic-docs.vercel.app",
   "imports": {
     "#package": [
       "./src/index.ts"
@@ -72,11 +59,17 @@
     "prepublish": "bun run build",
     "dev": "bun run ./playground/index.ts"
   },
+  "dependencies": {
+    "@magicyan/discord": "1.5.1",
+    "chalk": "5.4.1",
+    "rou3": "^0.8.1",
+    "tinyglobby": "^0.2.16"
+  },
   "peerDependencies": {
     "discord.js": ">=14.25.0"
   },
-  "dependencies": {
-    "rou3": "^0.8.1",
-    "tinyglobby": "^0.2.16"
+  "devDependencies": {
+    "@lithium/config": "*",
+    "typescript": "^5.8.2"
   }
 }

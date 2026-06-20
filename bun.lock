@@ -37,6 +37,8 @@
       "name": "@lithium",
       "version": "0.1.0",
       "dependencies": {
+        "@magicyan/discord": "1.5.1",
+        "chalk": "5.4.1",
         "rou3": "^0.8.1",
         "tinyglobby": "^0.2.16",
       },
@@ -69,6 +71,10 @@
 
     "@lithium/template": ["@lithium/template@workspace:packages/@template"],
 
+    "@magicyan/core": ["@magicyan/core@1.2.1", "", {}, "sha512-4eOQnzPf1hpbfFaviME8LqKyzFPGXddegETQ6ZuGeaeb2+uFQ7mRVudYt7IWb3fm8AtoX7iOBfmJDKMxVlxeTg=="],
+
+    "@magicyan/discord": ["@magicyan/discord@1.5.1", "", { "dependencies": { "@magicyan/core": "^1.1.1" }, "peerDependencies": { "discord.js": "^14.19.3" } }, "sha512-ejyC51E8rN/KjTN3Xj57HZgYhA4bDj1bnT4a45SuJOEhCVf7Sm+HTDpLGr6zu69csuH6Oul6KZ7xjEpoPZw+6w=="],
+
     "@sapphire/async-queue": ["@sapphire/async-queue@1.5.5", "", {}, "sha512-cvGzxbba6sav2zZkH8GPf2oGk9yYoD5qrNWdu9fRehifgnFZJMV+nuy2nON2roRO4yQQ+v7MK/Pktl/HgfsUXg=="],
 
     "@sapphire/shapeshift": ["@sapphire/shapeshift@4.0.0", "", { "dependencies": { "fast-deep-equal": "^3.1.3", "lodash": "^4.17.21" } }, "sha512-d9dUmWVA7MMiKobL3VpLF8P2aeanRTu6ypG2OIaEv/ZHH/SUQ2iHOVyi5wAPjQ+HmnMuL0whK9ez8I/raWbtIg=="],
@@ -85,7 +91,7 @@
 
     "bun-types": ["bun-types@1.3.14", "", { "dependencies": { "@types/node": "*" } }, "sha512-4N0ig0fEomHt5R0KCFWjovxow98rIoRwKolrYdCcknNwMekCXRnWEUvgu5soYV8QXtVsrUD8B95MBOZGPvr6KQ=="],
 
-    "chalk": ["chalk@5.6.2", "", {}, "sha512-7NzBL0rN6fMUW+f7A6Io4h40qQlG+xGmtMxfbnH/K7TAtt8JQWVQK+6g0UXKMeVJoyV5EkkNsErQ8pVD3bLHbA=="],
+    "chalk": ["chalk@5.4.1", "", {}, "sha512-zgVZuo2WcZgfUEmsn6eO3kINexW8RAE4maiQ8QNs8CtpPCSyMiYsULR3HQYkm3w8FIA3SberyMJMSldGsW+U3w=="],
 
     "discord-api-types": ["discord-api-types@0.38.49", "", {}, "sha512-XnqcWmnFZFAE8ZM8SHAw9DIV8D3Or00rMQ8iQLotrEA2PmXhl+ykaf6L6q4l474hrSUH1JaYcv+iOMRWp2p6Tg=="],
 
@@ -128,5 +134,7 @@
     "@discordjs/rest/@sapphire/snowflake": ["@sapphire/snowflake@3.5.5", "", {}, "sha512-xzvBr1Q1c4lCe7i6sRnrofxeO1QTP/LKQ6A6qy0iB4x5yfiSfARMEQEghojzTNALDTcv8En04qYNIco9/K9eZQ=="],
 
     "@discordjs/ws/@discordjs/collection": ["@discordjs/collection@2.1.1", "", {}, "sha512-LiSusze9Tc7qF03sLCujF5iZp7K+vRNEDBZ86FT9aQAv3vxMLihUvKvpsCWiQ2DJq1tVckopKm1rxomgNUc9hg=="],
+
+    "lithium-test-bot/chalk": ["chalk@5.6.2", "", {}, "sha512-7NzBL0rN6fMUW+f7A6Io4h40qQlG+xGmtMxfbnH/K7TAtt8JQWVQK+6g0UXKMeVJoyV5EkkNsErQ8pVD3bLHbA=="],
   }
 }
