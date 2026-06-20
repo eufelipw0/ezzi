@@ -30,7 +30,6 @@ import {
     type SlashCommandPrimitiveOptionData,
     type CommandType,
 } from "./command.js";
-import { parseCommands, cached } from "../../lib/index.js";
 
 type StoredAppCommandData =
     & GenericAppCommandData
@@ -762,13 +761,6 @@ export class CommandManager {
                 ),
             );
         }
-
-        const parsed = parseCommands(client);
-        for (const cmd of parsed) {
-            const registryKey = cmd.id ?? cmd.name;
-            cached.commands.set(registryKey, cmd);
-        }
-
         this.clear();
 
         if (messages.length) {
