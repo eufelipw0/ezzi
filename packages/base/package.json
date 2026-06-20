@@ -1,5 +1,5 @@
 {
-  "name": "@lithium",
+  "name": "@lithium/core",
   "version": "1.0.0",
   "description": "Library with structures and functions for creating modern Discord applications.",
   "license": "MIT",
@@ -36,10 +36,6 @@
     ".": {
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
-    },
-    "./lib": {
-      "import": "./dist/lib/index.js",
-      "types": "./dist/lib/index.d.ts"
     },
     "./tsconfig": "./tsconfig/base.json"
   },
