@@ -1,6 +1,6 @@
 {
   "name": "@ezzi/core",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "Library with structures and functions for creating modern Discord applications.",
   "license": "MIT",
   "type": "module",
@@ -31,7 +31,15 @@
     "node",
     "bun"
   ],
-  "homepage": "https://constatic-docs.vercel.app",
+  "repository": {
+    "url": "https://github.com/eufelipw0/ezzi",
+    "type": "git",
+    "directory": "packages/core"
+  },
+  "author": {
+    "name": "eufelipw0",
+    "url": "https://github.com/eufelipw0"
+  },
   "exports": {
     ".": {
       "import": "./dist/index.js",
