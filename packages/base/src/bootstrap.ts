@@ -1,7 +1,7 @@
 import { type Client } from "discord.js";
-import { LithiumApp, type BaseErrorHandler } from "./app.js";
+import { EzziApp, type BaseErrorHandler } from "./app.js";
 import { createClient, type CustomClientOptions } from "./client.js";
-import { LithiumError } from "./error.js";
+import { EzziError } from "./error.js";
 import { loadModules } from "./modules.js";
 
 export interface BootstrapOptions extends CustomClientOptions {
@@ -19,7 +19,7 @@ export interface BootstrapOptions extends CustomClientOptions {
   token?: string;
   /**
    * A custom error handler that overrides the default one
-   * configured by `LithiumApp`.
+   * configured by `EzziApp`.
    *
    * If provided, all global errors such as:
    * - `uncaughtException`
@@ -52,17 +52,17 @@ export interface BootstrapOptions extends CustomClientOptions {
 
 /**
  *
- * Bootstraps and initializes a Lithium application, creating the Discord client,
+ * Bootstraps and initializes a Ezzi application, creating the Discord client,
  * loading modules, registering events, and applying global error handlers.
  *
  * @example
- * import { bootstrap } from "@lithium";
+ * import { bootstrap } from "@ezzi";
  *
  * await bootstrap({ meta: import.meta });
  *
  * @example
  * import { env } from "#env";
- * import { bootstrap } from "@lithium";
+ * import { bootstrap } from "@ezzi";
  *
  * await bootstrap({ meta: import.meta, env });
  */
@@ -70,9 +70,9 @@ export async function bootstrap(options: BootstrapOptions) {
   const token =
     options.token ?? options.env?.BOT_TOKEN ?? process.env?.BOT_TOKEN;
 
-  if (!token) throw new LithiumError("The application token was not provided!");
+  if (!token) throw new EzziError("The application token was not provided!");
 
-  const app = LithiumApp.getInstance();
+  const app = EzziApp.getInstance();
   if (options.errorHandler) {
     app.setErrorHandler(options.errorHandler);
   }

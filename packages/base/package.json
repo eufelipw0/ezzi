@@ -1,5 +1,5 @@
 {
-  "name": "@lithium/core",
+  "name": "@ezzi/core",
   "version": "1.0.0",
   "description": "Library with structures and functions for creating modern Discord applications.",
   "license": "MIT",
@@ -69,7 +69,7 @@
     "discord.js": ">=14.25.0"
   },
   "devDependencies": {
-    "@lithium/config": "*",
+    "@ezzi/config": "*",
     "typescript": "^5.8.2"
   }
 }

@@ -1,14 +1,14 @@
-import { LithiumApp } from "../app.js";
-import {
-  IgnoreCommand,
-  type SubCommandGroupModuleData,
-  type SubCommandModuleData,
-} from "../creators/commands/command.js";
 import {
   ApplicationCommandOptionType,
   Client,
   type LocalizationMap,
 } from "discord.js";
+import { EzziApp } from "../app.js";
+import {
+  IgnoreCommand,
+  type SubCommandGroupModuleData,
+  type SubCommandModuleData,
+} from "../creators/commands/command.js";
 
 const optionTypes: Record<number, string> = {
   3: "string",
@@ -62,7 +62,7 @@ function sanitizeLocalizations(
 
 export function parseCommands(client: Client): ParsedCommand[] {
   const discordCommands = client.application?.commands.cache;
-  const app = LithiumApp.getInstance();
+  const app = EzziApp.getInstance();
   const localCommands = app.commands["collection"];
 
   if (!localCommands) return [];

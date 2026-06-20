@@ -3,39 +3,27 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "@lithium/root",
+      "name": "@ezzi/root",
       "devDependencies": {
         "@types/bun": "latest",
         "typescript": "^5.9.3",
       },
     },
-    "apps/bot": {
-      "name": "lithium-test-bot",
-      "dependencies": {
-        "@lithium": "workspace:*",
-        "chalk": "5.6.2",
-        "discord.js": "^14.14.1",
-        "zod": "4.1.11",
-      },
-      "devDependencies": {
-        "@lithium/config": "workspace:*",
-      },
-    },
     "packages/@config": {
-      "name": "@lithium/config",
+      "name": "@ezzi/config",
       "version": "0.0.0",
     },
     "packages/@template": {
-      "name": "@lithium/template",
+      "name": "@ezzi/template",
       "version": "1.0.0",
       "devDependencies": {
-        "@lithium/config": "*",
+        "@ezzi/config": "*",
         "typescript": "^5.9.3",
       },
     },
     "packages/base": {
-      "name": "@lithium",
-      "version": "0.1.0",
+      "name": "@ezzi/core",
+      "version": "1.0.0",
       "dependencies": {
         "@magicyan/discord": "1.5.1",
         "chalk": "5.4.1",
@@ -43,8 +31,7 @@
         "tinyglobby": "^0.2.16",
       },
       "devDependencies": {
-        "@lithium/config": "*",
-        "discord.js": "^14.26.3",
+        "@ezzi/config": "*",
         "typescript": "^5.8.2",
       },
       "peerDependencies": {
@@ -65,11 +52,11 @@
 
     "@discordjs/ws": ["@discordjs/ws@1.2.3", "", { "dependencies": { "@discordjs/collection": "^2.1.0", "@discordjs/rest": "^2.5.1", "@discordjs/util": "^1.1.0", "@sapphire/async-queue": "^1.5.2", "@types/ws": "^8.5.10", "@vladfrangu/async_event_emitter": "^2.2.4", "discord-api-types": "^0.38.1", "tslib": "^2.6.2", "ws": "^8.17.0" } }, "sha512-wPlQDxEmlDg5IxhJPuxXr3Vy9AjYq5xCvFWGJyD7w7Np8ZGu+Mc+97LCoEc/+AYCo2IDpKioiH0/c/mj5ZR9Uw=="],
 
-    "@lithium": ["@lithium@workspace:packages/base"],
+    "@ezzi/config": ["@ezzi/config@workspace:packages/@config"],
 
-    "@lithium/config": ["@lithium/config@workspace:packages/@config"],
+    "@ezzi/core": ["@ezzi/core@workspace:packages/base"],
 
-    "@lithium/template": ["@lithium/template@workspace:packages/@template"],
+    "@ezzi/template": ["@ezzi/template@workspace:packages/@template"],
 
     "@magicyan/core": ["@magicyan/core@1.2.1", "", {}, "sha512-4eOQnzPf1hpbfFaviME8LqKyzFPGXddegETQ6ZuGeaeb2+uFQ7mRVudYt7IWb3fm8AtoX7iOBfmJDKMxVlxeTg=="],
 
@@ -101,8 +88,6 @@
 
     "fdir": ["fdir@6.5.0", "", { "peerDependencies": { "picomatch": "^3 || ^4" }, "optionalPeers": ["picomatch"] }, "sha512-tIbYtZbucOs0BRGqPJkshJUYdL+SDH7dVM8gjy+ERp3WAUjLEFJE+02kanyHtwjWOnwrKYBiwAmM0p4kLJAnXg=="],
 
-    "lithium-test-bot": ["lithium-test-bot@workspace:apps/bot"],
-
     "lodash": ["lodash@4.18.1", "", {}, "sha512-dMInicTPVE8d1e5otfwmmjlxkZoUpiVLwyeTdUsi/Caj/gfzzblBcCE5sRHV/AsjuCmxWrte2TNGSYuCeCq+0Q=="],
 
     "lodash.snakecase": ["lodash.snakecase@4.1.1", "", {}, "sha512-QZ1d4xoBHYUeuouhEq3lk3Uq7ldgyFXGBhg04+oRLnIz8o9T65Eh+8YdroUwn846zchkA9yDsDl5CVVaV2nqYw=="],
@@ -127,14 +112,10 @@
 
     "ws": ["ws@8.21.0", "", { "peerDependencies": { "bufferutil": "^4.0.1", "utf-8-validate": ">=5.0.2" }, "optionalPeers": ["bufferutil", "utf-8-validate"] }, "sha512-Vsp28b7DRcimFQvrqu2Wek3z1iYxDCWqHYB8Qsnk/S4RfaCQzPGPyBNuVjJV3cd6UiKtUtp6sNM77gWvzcCH+g=="],
 
-    "zod": ["zod@4.1.11", "", {}, "sha512-WPsqwxITS2tzx1bzhIKsEs19ABD5vmCVa4xBo2tq/SrV4RNZtfws1EnCWQXM6yh8bD08a1idvkB5MZSBiZsjwg=="],
-
     "@discordjs/rest/@discordjs/collection": ["@discordjs/collection@2.1.1", "", {}, "sha512-LiSusze9Tc7qF03sLCujF5iZp7K+vRNEDBZ86FT9aQAv3vxMLihUvKvpsCWiQ2DJq1tVckopKm1rxomgNUc9hg=="],
 
     "@discordjs/rest/@sapphire/snowflake": ["@sapphire/snowflake@3.5.5", "", {}, "sha512-xzvBr1Q1c4lCe7i6sRnrofxeO1QTP/LKQ6A6qy0iB4x5yfiSfARMEQEghojzTNALDTcv8En04qYNIco9/K9eZQ=="],
 
     "@discordjs/ws/@discordjs/collection": ["@discordjs/collection@2.1.1", "", {}, "sha512-LiSusze9Tc7qF03sLCujF5iZp7K+vRNEDBZ86FT9aQAv3vxMLihUvKvpsCWiQ2DJq1tVckopKm1rxomgNUc9hg=="],
-
-    "lithium-test-bot/chalk": ["chalk@5.6.2", "", {}, "sha512-7NzBL0rN6fMUW+f7A6Io4h40qQlG+xGmtMxfbnH/K7TAtt8JQWVQK+6g0UXKMeVJoyV5EkkNsErQ8pVD3bLHbA=="],
   }
 }

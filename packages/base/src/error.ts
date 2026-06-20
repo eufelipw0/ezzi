@@ -10,7 +10,7 @@ import {
 import console from "node:console";
 import { styleText } from "node:util";
 
-export class LithiumError extends Error {
+export class EzziError extends Error {
   constructor(message: string) {
     super(message);
   }

@@ -9,7 +9,7 @@ import type { StandardSchemaV1 } from "./standard-schema.js";
  * @example
  * // "env.ts" — Using Zod
  * import { z } from "zod";
- * import { validateEnv } from "@lithium";
+ * import { validateEnv } from "@ezzi";
  *
  * export const env = await validateEnv(z.object({
  *     BOT_TOKEN: z.string("BOT_TOKEN is required").min(1)
@@ -18,7 +18,7 @@ import type { StandardSchemaV1 } from "./standard-schema.js";
  * @example
  * // "env.ts" — Using ArkType
  * import { type } from "arktype";
- * import { validateEnv } from "@lithium";
+ * import { validateEnv } from "@ezzi";
  *
  * export const env = await validateEnv(type({
  *     BOT_TOKEN: "string > 0"

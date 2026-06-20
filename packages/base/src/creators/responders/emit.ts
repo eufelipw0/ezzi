@@ -1,4 +1,4 @@
-import { LithiumApp } from "../../app.js";
+import { EzziApp } from "../../app.js";
 import type { GenericResponderInteraction } from "./manager.js";
 
 export type WithCustomId<T> = T & { customId: string };
@@ -22,7 +22,7 @@ export function emitResponder(
   const { customId, interaction } =
     typeof a === "string" ? { customId: a, interaction: b! } : a;
 
-  const app = LithiumApp.getInstance();
+  const app = EzziApp.getInstance();
   app.responders.onResponder(
     Object.assign(interaction, { customId }) as GenericResponderInteraction,
   );

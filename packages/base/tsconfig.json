@@ -1,5 +1,5 @@
 {
-  "extends": "@lithium/config/tsconfig",
+  "extends": "@ezzi/config/tsconfig",
   "compilerOptions": {
     "rootDir": "./src",
     "outDir": "./dist"
