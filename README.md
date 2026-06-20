@@ -1,5 +1,3 @@
-![Lithium banner](assets/banner.png)
-
 Tools for developing modern Discord bot applications.
 
 ---
