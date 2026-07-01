@@ -161,7 +161,6 @@ export type RunInteraction<T, Contexts> =
             : ChatInputCommandInteraction<CacheMode<Contexts>>;
 
 interface CommandRunThis {
-    /** Blocks the flow of executions */
     block(): never;
 }
 
@@ -246,11 +245,12 @@ class GroupCommandModule<
 
 export class Command<
     Type,
-    Contexts extends readonly InteractionContextType[],
+    Contexts extends readonly InteractionContextType[] = readonly InteractionContextType[],
     Return = unknown,
 > {
     public readonly modules: CommandModule[] = [];
     public readonly data: AppCommandData<Type, Contexts, Return>;
+    public moduleListener?: (module: CommandModule) => void;
 
     constructor(data: AppCommandData<Type, Contexts, Return>) {
         this.data = data;
@@ -266,25 +266,27 @@ export class Command<
             this.data.name = this.data.name.slice(0, 32);
         }
         if (!this.data.contexts) {
-            Object.assign(this.data, {
-                contexts: [InteractionContextType.Guild],
-            });
+            this.data.contexts = [InteractionContextType.Guild] as unknown as NotEmptyArray<UniqueArray<Contexts>>;
         }
     }
 
     public group<ModuleReturn = Return>(data: SubCommandGroupModuleData<Contexts, Return, ModuleReturn>) {
-        this.modules.push({
+        const module = {
             ...data,
             type: ApplicationCommandOptionType.SubcommandGroup,
-        } as CommandModule);
+        } as CommandModule;
+        this.modules.push(module);
+        this.moduleListener?.(module);
         return new GroupCommandModule<Type, Contexts, Return, ModuleReturn>(this, data);
     }
 
     public subcommand<R = Return>(data: SubCommandModuleData<Contexts, R>) {
-        this.modules.push({
+        const module = {
             ...data,
             type: ApplicationCommandOptionType.Subcommand,
-        } as CommandModule);
+        } as CommandModule;
+        this.modules.push(module);
+        this.moduleListener?.(module);
         return this;
     }
 }

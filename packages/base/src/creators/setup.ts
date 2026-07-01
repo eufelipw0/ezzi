@@ -1,6 +1,6 @@
 import {
-  ApplicationCommandOptionType,
   ApplicationCommandType,
+  InteractionContextType,
   type CacheType,
   type ClientEvents,
   type PermissionResolvable,
@@ -12,10 +12,9 @@ import {
   EzziApp,
 } from "../app.js";
 import {
+  Command,
   type AppCommandData,
   type CommandType,
-  type SubCommandGroupModuleData,
-  type SubCommandModuleData,
 } from "./commands/command.js";
 import { Event, type EventData } from "./events/event.js";
 import {
@@ -33,13 +32,6 @@ export interface SetupCreatorsOptions {
   events?: Partial<BaseEventsConfig>;
 }
 
-/**
- * Initializes the Ezzi command/event/responder creation system.
- *
- * This function configures the Ezzi application’s internal registries
- * for commands, events, and responders, and returns a set of factory
- * functions used to create each type of component.
- */
 export function setupCreators(options: SetupCreatorsOptions = {}) {
   const app = EzziApp.getInstance();
 
@@ -58,62 +50,27 @@ export function setupCreators(options: SetupCreatorsOptions = {}) {
   return {
     createCommand<
       T extends CommandType = ApplicationCommandType.ChatInput,
-      P extends boolean = false,
+      const C extends readonly InteractionContextType[] = [InteractionContextType.Guild],
       R = void,
-    >(data: AppCommandData<T, P, R>): any {
+    >(data: AppCommandData<T, C, R>): Command<T, C, R> {
       const currentApp = EzziApp.getInstance();
 
-      if (defaultMemberPerms) {
-        (data as any).defaultMemberPermissions ??= defaultMemberPerms;
-      }
+      if (defaultMemberPerms) data.defaultMemberPermissions ??= defaultMemberPerms;
+      if (defaultBotPerms && !data.botPermissions?.length) data.botPermissions = defaultBotPerms;
 
-      if (defaultBotPerms && !(data as any).botPermissions?.length) {
-        (data as any).botPermissions = defaultBotPerms;
-      }
+      const command = new Command<T, C, R>(data);
 
-      const resolved = currentApp.commands.set(data as any);
+      const resolved = currentApp.commands.set(command.data as any);
+
+      command.moduleListener = (module) => {
+        currentApp.commands.addModule(resolved.name, module);
+      };
 
       if (typeof (currentApp.commands as any).addLog === "function") {
         (currentApp.commands as any).addLog(resolved);
       }
 
-      if (resolved.type !== ApplicationCommandType.ChatInput) {
-        return resolved;
-      }
-
-      const commandName = resolved.name;
-
-      const createSubcommand =
-        <SubResult>(group?: string) =>
-        (subData: SubCommandModuleData<P, SubResult>): void => {
-          const subApp = EzziApp.getInstance();
-          if (defaultBotPerms && !subData.botPermissions?.length) {
-            subData = { ...subData, botPermissions: defaultBotPerms };
-          }
-          subApp.commands.addModule(commandName, {
-            ...subData,
-            group,
-            type: ApplicationCommandOptionType.Subcommand,
-          });
-        };
-
-      return Object.assign(data as any, {
-        ...resolved,
-
-        group<W = R>(groupData: SubCommandGroupModuleData<P, R, W>) {
-          const groupApp = EzziApp.getInstance();
-          if (defaultBotPerms && !groupData.botPermissions?.length) {
-            groupData = { ...groupData, botPermissions: defaultBotPerms };
-          }
-          groupApp.commands.addModule(commandName, {
-            ...groupData,
-            type: ApplicationCommandOptionType.SubcommandGroup,
-          });
-          return { subcommand: createSubcommand<W>(groupData.name) };
-        },
-
-        subcommand: createSubcommand<R>(),
-      });
+      return command;
     },
 
     createEvent<EventName extends keyof ClientEvents>(

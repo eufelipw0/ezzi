@@ -130,8 +130,6 @@ export class CommandManager {
     for (const [k, v] of this.aliasCollection) {
       this.runtimeCollection.set(k, v);
     }
-    this.collection.clear();
-    this.aliasCollection.clear();
   }
 
   public getAutocompleteHandler(
@@ -301,8 +299,11 @@ export class CommandManager {
             options: subcommands,
             defaultMemberPermissions,
             botPermissions,
+            run: _groupRun,
+            ignore: _groupIgnore,
+            aliases: _groupAliases,
             ...data
-          } = option;
+          } = option as any;
           if (botPermissions?.length) {
             this.botPermissionsMap.set(`${path}/${data.name}`, botPermissions);
           }
@@ -325,8 +326,13 @@ export class CommandManager {
             options: subOpts,
             defaultMemberPermissions,
             botPermissions,
+            run: _subRun,
+            ignore: _subIgnore,
+            aliases: _subAliases,
+            shortcut: _subShortcut,
+            group: _subGroup,
             ...data
-          } = option;
+          } = option as any;
           if (botPermissions?.length) {
             this.botPermissionsMap.set(`${path}/${data.name}`, botPermissions);
           }
@@ -343,8 +349,7 @@ export class CommandManager {
                     `${path}/${data.name}`,
                   ) as Exclude<
                     ApplicationCommandOptionData,
-                    | ApplicationCommandSubGroupData
-                    | ApplicationCommandSubCommandData
+                    ApplicationCommandSubGroupData | ApplicationCommandSubCommandData
                   >[],
                 }
               : {}),
@@ -476,22 +481,24 @@ export class CommandManager {
     const type = data.type ?? ApplicationCommandType.ChatInput;
     const name = this.formatName(data.name, type);
     const dmPermission = data.dmPermission ?? false;
+
+    const existingData = this.collection.get(name);
     const commandData: StoredAppCommandData = {
       ...data,
       name,
       type,
       dmPermission,
+      modules: existingData?.modules ?? [],
     };
 
-    if (this.collection.has(name)) {
-      const existing = this.collection.get(name)!;
+    if (existingData) {
       const canonicalPath = `/${type}/${name}`;
       this.commandRunners.delete(canonicalPath);
       this.optionDefs.delete(canonicalPath);
       this.botPermissionsMap.delete(canonicalPath);
       this.autocompleteRunners.delete(canonicalPath);
-      if (existing.aliases?.length) {
-        for (const alias of existing.aliases) {
+      if (existingData.aliases?.length) {
+        for (const alias of existingData.aliases) {
           this.aliasCollection.delete(this.formatName(alias, type));
         }
       }
@@ -545,8 +552,11 @@ export class CommandManager {
           descriptionLocalizations,
           category,
           botPermissions: _bp,
+          run: _run,
+          ignore: _ignore,
+          aliases: _aliases,
           ...data
-        } = raw;
+        } = raw as any;
 
         const path = `/${data.type}/${data.name}`;
 
@@ -558,7 +568,7 @@ export class CommandManager {
                 options: this.buildOptions(
                   [
                     ...(options ?? []),
-                    ...this.resolveModules(modules ?? [], path, data.run),
+                    ...this.resolveModules(modules ?? [], path, raw.run),
                   ] as SlashCommandOptionData<boolean>[],
                   path,
                 ),
@@ -589,7 +599,12 @@ export class CommandManager {
 
   public addModule(commandName: string, module: CommandModule): void {
     const command = this.collection.get(commandName);
-    if (!command) return;
+    if (!command) {
+      console.warn(
+        `[EzziApp] Comando "${commandName}" não encontrado ao registrar o módulo "${module.name}". Verifique se createCommand foi chamado antes de subcommand/group para esse comando.`,
+      );
+      return;
+    }
     command.modules ??= [];
     command.modules.push(module);
   }
@@ -815,6 +830,11 @@ export class CommandManager {
     const pluralize = (n: number) => (n > 1 ? "s" : "");
     const commands = this.build();
 
+    const stripInternal = (cmd: BuildedCommandData): ApplicationCommandData => {
+      const { global: _global, category: _category, ...rest } = cmd;
+      return rest;
+    };
+
     const createVerboseLogs = (
       cmdsCollection: Collection<string, ApplicationCommand>,
     ) =>
@@ -858,27 +878,33 @@ export class CommandManager {
       this.config.guilds?.includes(id),
     );
 
-    if (targetGuilds.size) {
-      const globalCommands = commands.filter((c) => c.global);
-      const guildCommands = commands.filter((c) => !c.global);
+    try {
+      if (targetGuilds.size) {
+        const globalCommands = commands.filter((c) => c.global).map(stripInternal);
+        const guildCommands = commands.filter((c) => !c.global).map(stripInternal);
 
-      await client.application.commands.set(globalCommands).then((cmds) => {
-        if (!cmds.size) return;
-        logRegistration(cmds, "globally");
-      });
+        await client.application.commands.set(globalCommands).then((cmds) => {
+          if (!cmds.size) return;
+          logRegistration(cmds, "globally");
+        });
 
-      for (const guild of targetGuilds.values()) {
-        const cmds = await guild.commands.set(guildCommands);
-        logRegistration(cmds, `in ${ck.underline(guild.name)} guild`);
+        for (const guild of targetGuilds.values()) {
+          const cmds = await guild.commands.set(guildCommands);
+          logRegistration(cmds, `in ${ck.underline(guild.name)} guild`);
+        }
+      } else {
+        await Promise.all(
+          client.guilds.cache.map((guild) => guild.commands.set([])),
+        );
+
+        const globalCommands = commands.map(stripInternal);
+
+        await client.application.commands
+          .set(globalCommands)
+          .then((cmds) => logRegistration(cmds, "globally"));
       }
-    } else {
-      await Promise.all(
-        client.guilds.cache.map((guild) => guild.commands.set([])),
-      );
-
-      await client.application.commands
-        .set(commands)
-        .then((cmds) => logRegistration(cmds, "globally"));
+    } catch (err) {
+      console.error("[EzziApp] Falha ao registrar comandos no Discord:", err);
     }
 
     const prefixCount = this.getPrefixCommandCount();
