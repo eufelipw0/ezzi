@@ -56,13 +56,13 @@ export interface BootstrapOptions extends CustomClientOptions {
  * loading modules, registering events, and applying global error handlers.
  *
  * @example
- * import { bootstrap } from "@ezzi/core";
+ * import { bootstrap } from "@ezzi/base";
  *
  * await bootstrap({ meta: import.meta });
  *
  * @example
  * import { env } from "#env";
- * import { bootstrap } from "@ezzi/core";
+ * import { bootstrap } from "@ezzi/base";
  *
  * await bootstrap({ meta: import.meta, env });
  */

@@ -5,12 +5,12 @@ Library with structures and functions for creating modern Discord applications.
 It all starts with the bootstrap function.
 
 ```ts
-import { bootstrap } from "@ezzi/core";
+import { bootstrap } from "@ezzi/base";
 
 await bootstrap({ meta: import.meta });
 ```
 
-> Migrating from Constatic to Ezzi is very simple! Just replace `@constatic/base` with `@ezzi/core`.
+> Migrating from Constatic to Ezzi is very simple! Just replace `@constatic/base` with `@ezzi/base`.
 
 ---
 

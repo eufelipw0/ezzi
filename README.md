@@ -12,4 +12,4 @@ While keeping the excellent core ideas and structure of the original project, Ez
 
 ## Packages
 
-- `@ezzi/core` ([source](./packages/base)) - Base with structures and functions for creating modern Discord applications.
+- `@ezzi/base` ([source](./packages/base)) - Base with structures and functions for creating modern Discord applications.

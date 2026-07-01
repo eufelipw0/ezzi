@@ -1,6 +1,6 @@
 {
-  "name": "@ezzi/core",
-  "version": "1.2.3",
+  "name": "@ezzi/base",
+  "version": "1.0.0",
   "description": "Library with structures and functions for creating modern Discord applications.",
   "license": "MIT",
   "type": "module",
