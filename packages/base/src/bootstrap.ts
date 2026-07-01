@@ -1,7 +1,7 @@
 import { type Client } from "discord.js";
 import { EzziApp, type BaseErrorHandler } from "./app.js";
 import { createClient, type CustomClientOptions } from "./client.js";
-import { EzziError } from "./error.js";
+import { Errors } from "./error.js";
 import { loadModules } from "./modules.js";
 
 export interface BootstrapOptions extends CustomClientOptions {
@@ -70,7 +70,7 @@ export async function bootstrap(options: BootstrapOptions) {
   const token =
     options.token ?? options.env?.BOT_TOKEN ?? process.env?.BOT_TOKEN;
 
-  if (!token) throw new EzziError("The application token was not provided!");
+  if (!token) throw Errors.tokenNotProvided();
 
   const app = EzziApp.getInstance();
   if (options.errorHandler) {

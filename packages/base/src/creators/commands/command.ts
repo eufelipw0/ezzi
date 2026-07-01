@@ -246,7 +246,7 @@ class GroupCommandModule<
 
 export class Command<
     Type,
-    Contexts extends readonly InteractionContextType[] = readonly [typeof InteractionContextType.Guild],
+    Contexts extends readonly InteractionContextType[],
     Return = unknown,
 > {
     public readonly modules: CommandModule[] = [];
