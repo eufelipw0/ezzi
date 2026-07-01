@@ -5,6 +5,7 @@ node_modules
 .npmrc
 
 /apps
+/packages/base/src/tools
 
 # output
 out
