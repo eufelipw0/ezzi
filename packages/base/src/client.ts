@@ -34,14 +34,10 @@ export function createClient(token: string, options: CustomClientOptions) {
       styleText("green", "application is ready!"),
     );
     await app.commands.register(readyClient);
-
-    if (typeof app.events.runReady === "function") {
-      await (app.events as any).runReady(readyClient);
-    }
+    await app.events.runReady(readyClient);
   });
 
   client.on("messageCreate", async (message) => {
-    if (message.author.bot) return;
     await app.commands.onPrefixCommand(message);
   });
 

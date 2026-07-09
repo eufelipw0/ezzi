@@ -60,7 +60,7 @@ export class EventManager extends BaseManager {
     }
     public register(client: Client) {
         const collection = this.collection.filter(
-            (_, key) => key !== "clientReady" && key !== "messageCreate"
+            (_, key) => key !== "clientReady"
         );
 
         for (const [key, events] of collection.entries()) {
